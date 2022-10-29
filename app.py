@@ -1,4 +1,4 @@
-from time import strftime as stt
+#from time import strftime as stt
 import streamlit as st
 import polars as pl
 import pandas as pd
@@ -9,7 +9,7 @@ from openpyxl.worksheet.table import Table, TableStyleInfo
 from openpyxl.utils import get_column_letter
 from io import BytesIO
 from deta import Deta
-import zulip
+#import zulip
 import socket
 import os
 import warnings
@@ -245,14 +245,14 @@ def action(data):
         xls_bytes = BytesIO(save_virtual_workbook(wb))
 
         try:
-            zulip.Client(api_key=os.environ.get('msg_key'),
-                         email=os.environ.get('msg_mail'),
-                         site=os.environ.get('msg_site')).send_message({"type": "private",
-                                                                      "to": [os.environ.get('msg_to')],
-                                                                      "content": f"CDReport ran at {stt('%HH:%MM:%SS on %d-%m-%y')}"})
+            ...
+            #zulip.Client(api_key=os.environ.get('msg_key'),
+            #             email=os.environ.get('msg_mail'),
+            #             site=os.environ.get('msg_site')).send_message({"type": "private",
+            #                                                          "to": [os.environ.get('msg_to')],
+            #                                                          "content": f"CDReport ran at {stt('%HH:%MM:%SS on %d-%m-%y')}"})
         except Exception as e:
-            st.write('action_zulip error')
-            st.write(e)
+            print('action_zulip', e)
 
         return xls_bytes
 
@@ -293,3 +293,5 @@ else:
 
 #   Add KPI col
 #   Date to be included either in filename or somewhere in spreadsheet
+
+#   !!! Fix Zulip !!!
