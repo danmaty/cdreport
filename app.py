@@ -75,7 +75,7 @@ def make_dt(file, downtime, keep):
         df = df[df['Username'].isin(keep)]
 
         ##############################################
-        #   !!! Simple and clever DT logic !!!
+        #   DT
         ##############################################
         df.rename({'Movement Date': 'Time', 'Username': 'Name'}, axis=1, inplace=True)
         df.Time = pd.to_datetime(df.Time)
