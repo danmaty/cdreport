@@ -287,12 +287,12 @@ if access:
     st.write('Default value is 10 minutes')
     dt_tolerance = st.text_input(label='Downtime tolerance', label_visibility='hidden', value='00:10:00')
     st.write('Please, bear in mind that the below 5 activities are included in figures.')
-    st.write('  Pack complete')
-    st.write('  Pick from location')
-    st.write('  Receiving')
-    st.write('  Putaway putdown')
-    st.write('  Move dropoff')
-    uploaded_file = st.file_uploader("Choose a file")
+    st.write('- Pack complete')
+    st.write('- Pick from location')
+    st.write('- Receiving')
+    st.write('- Putaway putdown')
+    st.write('- Move dropoff')
+    uploaded_file = st.file_uploader("Choose a file", label_visibility='hidden')
 
     if uploaded_file is not None:
         to_dl, file_name = action(uploaded_file)
