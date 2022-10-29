@@ -288,7 +288,7 @@ else:
 #   Set Title
 #   Add textinput for downtime tolerance
 #   Amend "Downtime tolerance" using format hh:mm:ss
-#   Developed by Daniel Matyasi -> linkedin
+#   App by Daniel Matyasi -> linkedin
 
 #   Add KPI col
 #   Date to be included either in filename or somewhere in spreadsheet
