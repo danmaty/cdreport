@@ -1,3 +1,4 @@
+import math
 from time import strftime as stt
 import streamlit as st
 import polars as pl
@@ -10,7 +11,6 @@ from openpyxl.utils import get_column_letter
 from io import BytesIO
 from deta import Deta
 import zulip
-import socket
 import os
 import warnings
 warnings.simplefilter(action='ignore')
@@ -134,9 +134,7 @@ def make_dt(file, downtime, keep):
         ##############################################
         df_top = df[df.groupby('Name')['Downtime'].rank(ascending=False) <= 3]
         df_top.reset_index(drop=True, inplace=True)
-        df_top['Tops'] = df_top['Name'] + ' ' + df_top['Time'].astype('str').str[11:] + '---' + df_top[
-                                                                                                    'Downtime'].astype(
-            'str').str[7:]
+        df_top['Tops'] = df_top['Name'] + ' ' + df_top['Time'].astype('str').str[11:] + '---' + df_top['Downtime'].astype('str').str[7:]
         del df_top['Time']
         del df_top['Downtime']
 
@@ -155,6 +153,7 @@ def make_dt(file, downtime, keep):
         #   Map all dicts
         ##############################################
         dfr = df_start
+        data_date = dfr['Time'].iloc[0].to_pydatetime().strftime('%A %d-%m-%Y')
         dfr.rename({'Time': 'Start'}, axis=1, inplace=True)
         dfr['Finish'] = dfr['Name'].map(finish_dict)
         dfr['Time'] = dfr['Name'].map(time_dict)
@@ -175,7 +174,7 @@ def make_dt(file, downtime, keep):
         dfr['Top_DTs'] = dfr['Top_DTs'].astype('str').str.replace("'", "")
         dfr['Top_DTs'] = dfr['Top_DTs'].astype('str').str.replace('nan', '')
 
-        return dfr
+        return dfr, data_date
 
     except Exception as e:
         print('make_dt', e)
@@ -185,11 +184,28 @@ def make_dt(file, downtime, keep):
 def action(data):
     try:
         df_fig, name_list = make_figs(data)
-        # df_dt = make_dt(data, '00:10:00', name_list)
-        df_dt = make_dt(data, '00:10:00', name_list)
+        df_dt, rep_name = make_dt(data, dt_tolerance, name_list)
+
+        ##############################################
+        #   KPI
+        ##############################################
+        try:
+            figs = df_fig['Figures'].to_list()
+            tot_time = df_dt['Time'].to_list()
+            minutes = []
+            for t in tot_time:
+                minutes.append(int(math.floor((int(t[:2]) * 60 + int(t[3:5])) / 15)) * 15)
+            kpi = []
+            for i, f in enumerate(figs):
+                kpi.append(round((f / (minutes[i] / 60)), 2))
+            df_fig['KPI'] = kpi
+            df_fig = df_fig[['Name', 'Figures', 'KPI', '7am', '8am', '9am', '10am', '11am', '12pm', '13pm', '14pm', '15pm', '16pm', '17pm', '18pm', '19pm', '20pm', '21pm', '22pm', '23pm']]
+        except Exception as e:
+            print('action_kpi', e)
 
     except Exception as e:
         print('action_1', e)
+        rep_name = 'error.xlsx'
 
     try:
         wb = Workbook()
@@ -212,7 +228,7 @@ def action(data):
         table2.tableStyleInfo = style
 
         ws1.column_dimensions["A"].width = 20
-        ws1.column_dimensions["B"].width = 9
+        ws1.column_dimensions["B"].width = 10
         ws1.column_dimensions["C"].width = 9
         ws1.column_dimensions["D"].width = 9
         ws1.column_dimensions["E"].width = 9
@@ -230,6 +246,7 @@ def action(data):
         ws1.column_dimensions["Q"].width = 9
         ws1.column_dimensions["R"].width = 9
         ws1.column_dimensions["S"].width = 9
+        ws1.column_dimensions["T"].width = 9
 
         ws2.column_dimensions["A"].width = 20
         ws2.column_dimensions["B"].width = 12
@@ -245,15 +262,11 @@ def action(data):
         xls_bytes = BytesIO(save_virtual_workbook(wb))
 
         try:
-            zulip.Client(api_key=os.environ.get('msg_key'),
-                         email=os.environ.get('msg_mail'),
-                         site=os.environ.get('msg_site')).send_message({"type": "private",
-                                                                      "to": [os.environ.get('msg_to')],
-                                                                      "content": f"CDReport ran at {stt('%HH:%MM:%SS on %d-%m-%y')}"})
+            zulip.Client(api_key=os.environ.get('msg_key'), email=os.environ.get('msg_mail'), site=os.environ.get('msg_site')).send_message({"type": "private", "to": [int(os.environ.get('msg_to'))], "content": f"CDReport ran at {stt('%H:%M:%S on %d-%m-%y')}"})
         except Exception as e:
             print('action_zulip', e)
 
-        return xls_bytes
+        return xls_bytes, rep_name
 
     except Exception as e:
         print('action_2', e)
@@ -270,27 +283,27 @@ except Exception as e:
     access = None
 
 if access:
+    st.write('Set downtime tolerance before uploading data. Use format hh:mm:ss')
+    st.write('Default value is 10 minutes')
+    dt_tolerance = st.text_input(label='Downtime tolerance', label_visibility='hidden', value='00:10:00')
+    st.write('Please, bear in mind that the below 5 activities are included in figures.')
+    st.write('  Pack complete')
+    st.write('  Pick from location')
+    st.write('  Receiving')
+    st.write('  Putaway putdown')
+    st.write('  Move dropoff')
     uploaded_file = st.file_uploader("Choose a file")
+
     if uploaded_file is not None:
-        maybe = action(uploaded_file)
+        to_dl, file_name = action(uploaded_file)
 
         st.download_button(
             label="Download Report",
-            data=maybe,
-            file_name='report.xlsx',
+            data=to_dl,
+            file_name=file_name + '.xlsx',
             mime='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
         )
 else:
     st.write("I'm afraid you will have to contact your administrator.")
+    st.write("...")
     st.write("Hey! Psst! The name you're trying to remember is Daniel Matyasi -> linkedin")
-
-
-#   Set Title
-#   Add textinput for downtime tolerance
-#   Amend "Downtime tolerance" using format hh:mm:ss
-#   App by Daniel Matyasi -> linkedin
-
-#   Add KPI col
-#   Date to be included either in filename or somewhere in spreadsheet
-
-#   !!! Fix Zulip !!!
