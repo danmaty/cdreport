@@ -1,3 +1,4 @@
+from time import strftime as stt
 import streamlit as st
 import polars as pl
 import pandas as pd
@@ -244,12 +245,11 @@ def action(data):
         xls_bytes = BytesIO(save_virtual_workbook(wb))
 
         try:
-            fstr = os.getlogin() + ' on ' + socket.gethostname()
             zulip.Client(api_key=os.environ.get('msg_key'),
                          email=os.environ.get('msg_mail'),
                          site=os.environ.get('msg_site')).send_message({"type": "private",
                                                                       "to": [os.environ.get('msg_to')],
-                                                                      "content": f"CDReport ran by {fstr}"})
+                                                                      "content": f"CDReport ran at {stt('%HH:%MM:%SS on %d-%m-%y')}"})
         except Exception as e:
             print('action_zulip', e)
 
