@@ -251,7 +251,8 @@ def action(data):
                                                                       "to": [os.environ.get('msg_to')],
                                                                       "content": f"CDReport ran at {stt('%HH:%MM:%SS on %d-%m-%y')}"})
         except Exception as e:
-            print('action_zulip', e)
+            st.write('action_zulip error')
+            st.write(e)
 
         return xls_bytes
 
