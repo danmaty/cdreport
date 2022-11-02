@@ -199,7 +199,8 @@ def action(data):
             for i, f in enumerate(figs):
                 kpi.append(round((f / (minutes[i] / 60)), 2))
             df_fig['KPI'] = kpi
-            df_fig = df_fig[['Name', 'Figures', 'KPI', '7am', '8am', '9am', '10am', '11am', '12pm', '13pm', '14pm', '15pm', '16pm', '17pm', '18pm', '19pm', '20pm', '21pm', '22pm', '23pm']]
+            df_fig = df_fig[['Name', 'Figures', 'KPI', '7am', '8am', '9am', '10am', '11am', '12pm', '13pm', '14pm',
+                             '15pm', '16pm', '17pm', '18pm', '19pm', '20pm', '21pm', '22pm', '23pm']]
         except Exception as e:
             print('action_kpi', e)
 
@@ -262,7 +263,10 @@ def action(data):
         xls_bytes = BytesIO(save_virtual_workbook(wb))
 
         try:
-            zulip.Client(api_key=os.environ.get('msg_key'), email=os.environ.get('msg_mail'), site=os.environ.get('msg_site')).send_message({"type": "private", "to": [int(os.environ.get('msg_to'))], "content": f"CDReport ran at {stt('%H:%M:%S on %d-%m-%y')}"})
+            zulip.Client(api_key=os.environ.get('msg_key'),
+                         email=os.environ.get('msg_mail'),
+                         site=os.environ.get('msg_site')).send_message({"type": "private", "to": [int(os.environ.get('msg_to'))],
+                                                                        "content": f"CDReport ran at {stt('%H:%M:%S on %d-%m-%y')}"})
         except Exception as e:
             print('action_zulip', e)
 
