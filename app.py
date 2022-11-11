@@ -28,6 +28,11 @@ def make_figs(file):
             .groupby(pl.col('Username')) \
             .agg([
             (pl.col('Movement Type')).count().alias('Figures'),
+            (pl.col('Movement Type').str.contains('Pick from location')).sum().alias('Picks'),
+            (pl.col('Movement Type').str.contains('Pack complete')).sum().alias('Packs'),
+            (pl.col('Movement Type').str.contains('Putaway putdown')).sum().alias('Putaway'),
+            (pl.col('Movement Type').str.contains('Move dropoff')).sum().alias('Moves'),
+            (pl.col('Movement Type').str.contains('Receiving')).sum().alias('Rcv'),
             (pl.col('Movement Date').str.contains(' 06:')).sum().alias('7am'),
             (pl.col('Movement Date').str.contains(' 07:')).sum().alias('8am'),
             (pl.col('Movement Date').str.contains(' 08:')).sum().alias('9am'),
@@ -199,7 +204,8 @@ def action(data):
             for i, f in enumerate(figs):
                 kpi.append(round((f / (minutes[i] / 60)), 2))
             df_fig['KPI'] = kpi
-            df_fig = df_fig[['Name', 'Figures', 'KPI', '7am', '8am', '9am', '10am', '11am', '12pm', '13pm', '14pm',
+            df_fig = df_fig[['Name', 'Figures', 'KPI', 'Picks', 'Packs', 'Putaway', 'Moves', 'Rcv',
+                             '7am', '8am', '9am', '10am', '11am', '12pm', '13pm', '14pm',
                              '15pm', '16pm', '17pm', '18pm', '19pm', '20pm', '21pm', '22pm', '23pm']]
         except Exception as e:
             print('action_kpi', e)
@@ -231,11 +237,13 @@ def action(data):
         ws1.column_dimensions["A"].width = 20
         ws1.column_dimensions["B"].width = 10
         ws1.column_dimensions["C"].width = 9
-        ws1.column_dimensions["D"].width = 9
-        ws1.column_dimensions["E"].width = 9
-        ws1.column_dimensions["F"].width = 9
-        ws1.column_dimensions["G"].width = 9
-        ws1.column_dimensions["H"].width = 9
+
+        ws1.column_dimensions["D"].width = 10
+        ws1.column_dimensions["E"].width = 10
+        ws1.column_dimensions["F"].width = 10
+        ws1.column_dimensions["G"].width = 10
+        ws1.column_dimensions["H"].width = 10
+
         ws1.column_dimensions["I"].width = 9
         ws1.column_dimensions["J"].width = 9
         ws1.column_dimensions["K"].width = 9
@@ -248,6 +256,11 @@ def action(data):
         ws1.column_dimensions["R"].width = 9
         ws1.column_dimensions["S"].width = 9
         ws1.column_dimensions["T"].width = 9
+        ws1.column_dimensions["U"].width = 9
+        ws1.column_dimensions["V"].width = 9
+        ws1.column_dimensions["W"].width = 9
+        ws1.column_dimensions["X"].width = 9
+        ws1.column_dimensions["Y"].width = 9
 
         ws2.column_dimensions["A"].width = 20
         ws2.column_dimensions["B"].width = 12
