@@ -9,7 +9,7 @@ from openpyxl.writer.excel import save_virtual_workbook
 from openpyxl.worksheet.table import Table, TableStyleInfo
 from openpyxl.utils import get_column_letter
 from io import BytesIO
-from deta import Deta
+# from deta import Deta
 import zulip
 import os
 import warnings
@@ -292,9 +292,10 @@ def action(data):
 st.title("Sidi's Report")
 
 try:
-    deta = Deta(os.environ.get('db_key'))
-    db = deta.Base(os.environ.get('db_name'))
-    access = db.get(key='access').get('value')
+#     deta = Deta(os.environ.get('db_key'))
+#     db = deta.Base(os.environ.get('db_name'))
+#     access = db.get(key='access').get('value')
+    access = True
 except Exception as e:
     print('deta_access', e)
     access = None
